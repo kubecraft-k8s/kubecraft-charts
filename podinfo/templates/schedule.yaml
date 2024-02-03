@@ -1,0 +1,13 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: podinfo
+  namespace: velero
+spec:
+  schedule: '0 10 * * *'
+  template:
+    includedResources:
+      - deployment
+    labelSelector:
+      matchLabels:
+        x.velero.backup: podinfo
