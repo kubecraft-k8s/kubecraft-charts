@@ -1,0 +1,54 @@
+{{ range .Values.hooks}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .name}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:  {{ .name}}
+  namespace: {{ .serviceAccount.namespace }}
+rules:
+{{ .serviceAccount.rules | toYaml | indent 2}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .name}}
+  namespace: {{ .serviceAccount.namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .name}}
+    namespace: {{$.Release.Namespace}}
+roleRef:
+  kind: Role
+  name: {{ .name}}
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .name}}-hook
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .name}}
+    spec:
+      serviceAccountName: {{ .name}}
+      containers:
+        - name: {{ .name}}
+          image: {{ .job.image}}
+          {{- if not (empty .job.command)}}
+          command: {{- toYaml .job.command | nindent 12 }}
+          {{- end }}
+          {{- if not (empty .job.args)}}
+          args: {{- toYaml .job.args | nindent 12 }}
+          {{- end }}
+      restartPolicy: Never
+---
+{{- end }}
