@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: podinfo-restore
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:  podinfo-restore
+  namespace: velero
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+rules:
+    - apiGroups: [ "velero.io" ]
+      resources:
+        - backups
+      verbs:
+        - get
+        - list
+        - watch
+    - apiGroups: [ "velero.io" ]
+      resources:
+        - restores
+      verbs:
+        - list
+        - get
+        - watch
+        - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: podinfo-restore
+  namespace: velero
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+subjects:
+  - kind: ServiceAccount
+    name: podinfo-restore
+    namespace: {{$.Release.Namespace}}
+roleRef:
+  kind: Role
+  name: podinfo-restore
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: podinfo-restore
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+spec:
+  template:
+    metadata:
+      name: podinfo-restore
+    spec:
+      serviceAccountName: podinfo-restore
+      containers:
+        - name: podinfo-restore
+          image: "busybox"
+          command:
+            - "bin/sh"
+            - "-c"
+            - |
+              BACKUPNAME=podinfo-pods
+              echo $BACKUPNAME
+              wget "https://dl.k8s.io/release/$(wget -qO - https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+              chmod a+x kubectl
+              BACKUPS=$(./kubectl get backup -n velero -l "velero.io/schedule-name"="$BACKUPNAME" --sort-by='status.completionTimestamp' -o jsonpath='{.items}')
+              if [ "$BACKUPS" != "[]" ]; then
+                BACKUP=$(./kubectl get backup -n velero -l "velero.io/schedule-name"="$BACKUPNAME" --sort-by='status.completionTimestamp' -o jsonpath='{.items[-1:].metadata.name}')
+                echo "$BACKUP"
+
+                wget https://github.com/vmware-tanzu/velero/releases/download/v1.13.0/velero-v1.13.0-linux-arm64.tar.gz
+                tar -xf velero-v1.13.0-linux-arm64.tar.gz
+                ./velero-v1.13.0-linux-arm64/velero restore create "$BACKUP-$RANDOM" --from-backup="$BACKUP" --wait
+              fi
+      restartPolicy: Never
+---
