@@ -1,7 +1,7 @@
 apiVersion: velero.io/v1
 kind: Schedule
 metadata:
-  name: podinfo
+  name: {{ .Values.backupname }}
   namespace: velero
 spec:
   schedule: '0 10 * * *'
@@ -10,4 +10,4 @@ spec:
       - deployment
     labelSelector:
       matchLabels:
-        x.velero.backup: podinfo
+        x.velero.backup: {{ .Values.backupname }}

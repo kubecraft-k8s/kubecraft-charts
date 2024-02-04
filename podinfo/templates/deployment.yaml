@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: podinfo
-  labels:
-    "x.velero.backup": podinfo
 spec:
   replicas: 2
   minReadySeconds: 3
@@ -23,6 +21,7 @@ spec:
         prometheus.io/port: "9797"
       labels:
         app: podinfo
+        "x.velero.backup": {{ .Values.backupname }}
     spec:
       containers:
         - name: podinfod
