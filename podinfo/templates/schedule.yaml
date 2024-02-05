@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.backupname }}
   namespace: velero
 spec:
-  schedule: '0 10 * * *'
+  schedule: {{ .Values.schedule }}
   template:
     includedResources:
       - deployment

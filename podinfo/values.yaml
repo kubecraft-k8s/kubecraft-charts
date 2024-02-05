@@ -1,1 +1,3 @@
 backupname: "podinfo-pods"
+schedule: '0 10 * * *'
+replicas: 5
