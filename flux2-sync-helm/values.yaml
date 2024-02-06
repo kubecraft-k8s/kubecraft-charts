@@ -11,18 +11,4 @@ gitRepository:
     url: "https://github.com/kubecraft-k8s/kubecraft-charts"
     ref:
       branch: main
-helmrelease:
-  labels: {}
-  annotations: {}
-  spec:
-    dependsOn: []
-    interval: 1m
-    targetNamespace: ""
-    chart:
-      version:
-      interval: 1m
-      name:
-      sourceRef:
-        kind: HelmRepository
-      values: {}
 helmreleases: []
