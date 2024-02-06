@@ -1,0 +1,56 @@
+{{- range .Values.helmreleases }}
+{{- $name := default $.Release.Name}}
+{{- if and .metadata .metadata.name}}
+{{- $name := .name  }}
+{{- end}}
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ $.Release.Namespace | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service | quote }}
+    app.kubernetes.io/part-of: flux
+    helm.sh/chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+  {{- with .labels }}{{ toYaml . | indent 4 }}{{ end }}
+  {{- with .annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  name:  {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  install:
+    createNamespace: true
+  releaseName: {{ $name }}
+  {{- if .spec }}
+  targetNamespace: {{ .spec.targetNamespace | default $name }}
+  dependsOn: {{ toYaml .spec.dependsOn | nindent 4 }}
+  storageNamespace: {{ .spec.storageNamespace | default "flux-system" }}
+  chart:
+    spec:
+      interval: {{ .spec.interval | default "1m" }}
+      chart: {{ .spec.chart.name | default "flux2-sync-helm" }}
+      {{- if .spec.chart.sourceRef }}
+      sourceRef:
+        kind: {{ .spec.chart.sourceRef.kind | default "GitRepository" }}
+        name: {{ $.Release.Name }}
+      {{- else }}
+      sourceRef:
+        kind: "GitRepository"
+        name: {{ $.Release.Name }}
+      {{- end }}
+      {{- if .spec.chart.version }}
+      version: {{ .spec.chart.version}}
+      {{- end }}
+  {{- else }}
+  chart:
+    spec:
+      chart: "flux2-sync-helm"
+      sourceRef:
+        kind: "GitRepository"
+        name: {{ $.Release.Name }}
+  {{- end }}
+  interval: {{ .interval | default "1m" }}
+  {{- with .values }}
+  values: {{ toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

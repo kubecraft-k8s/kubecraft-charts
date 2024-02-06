@@ -22,13 +22,13 @@ spec:
   storageNamespace: {{ .Values.helmrelease.spec.storageNamespace | default "flux-system" }}
   chart:
     spec:
-      chart: {{ .Values.helmrelease.spec.chart.name }}
-      interval: {{ .Values.helmrelease.spec.interval }}
+      chart: {{ .Values.helmrelease.spec.chart.name | default "flux2-sync-helm" }}
+      interval: {{ .Values.helmrelease.spec.interval | default "1m" }}
       sourceRef:
-        kind: {{ .Values.helmrelease.spec.chart.sourceRef.kind }}
+        kind: {{ .Values.helmrelease.spec.chart.sourceRef.kind | default "GitRepository" }}
         name: {{ .Release.Name }}
       version: {{ .Values.helmrelease.spec.chart.version}}
-  interval: 1m
+  interval: {{ .Values.helmrelease.interval | default "1m" }}
   {{- with .Values.helmrelease.spec.chart.values }}
   values: {{ toYaml . | nindent 4 }}
   {{- end }}

@@ -1,4 +1,3 @@
-{{- if .Values.gitRepository }}
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
@@ -48,4 +47,3 @@ spec:
   {{- with .Values.gitRepository.spec.include }}
   include: {{ toYaml . | nindent 4 }}
   {{- end }}
-{{- end }}
