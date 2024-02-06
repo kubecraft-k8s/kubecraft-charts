@@ -1,4 +1,6 @@
-{{- if .Values.helmrepository }}
+{{- range .Values.helmreleases }}
+{{- if .spec.chart.source.kind eq "HelmRepository"}}
+{{- $name := .metadata.name  }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -7,18 +9,19 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/part-of: flux
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-{{ with .Values.helmrepository.labels }}{{ toYaml . | indent 4 }}{{ end }}
-{{- with .Values.helmrepository.annotations }}
+{{ with .spec.chart.source.labels }}{{ toYaml . | indent 4 }}{{ end }}
+{{- with .spec.chart.source.annotations }}
   annotations: {{ toYaml . | nindent 4 }}
 {{- end }}
-  name: {{ .Release.Name }}
+  name: {{- .metadata.name  }}
   namespace: {{ .Release.Namespace }}
 spec:
-  url: {{ .Values.helmrepository.spec.url }}
-  {{- if .Values.helmrepository.spec.interval }}
-  interval: {{ .Values.helmrepository.spec.interval }}
+  url: {{ .spec.chart.source.url }}
+  {{- if .spec.chart.source.interval }}
+  interval: {{ .spec.chart.source.interval }}
   {{- end }}
-  {{- if .Values.helmrepository.spec.type }}
-  type: {{ .Values.helmrepository.spec.type }}
+  {{- if ..spec.chart.source.type }}
+  type: {{ .spec.chart.source.type }}
   {{- end }}
+{{- end }}
 {{- end }}

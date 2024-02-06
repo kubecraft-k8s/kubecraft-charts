@@ -1,3 +1,6 @@
+{{- range .Values.helmreleases }}
+{{- if .spec.chart.source.kind eq "GitRepository" or .spec.chart.source.kind eq ""}}
+{{- $name := .metadata.name  }}
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
@@ -6,44 +9,46 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/part-of: flux
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-{{ with .Values.gitRepository.labels }}{{ toYaml . | indent 4 }}{{ end }}
+{{ with .spec.chart.source.labels }}{{ toYaml . | indent 4 }}{{ end }}
 {{- with .Values.gitRepository.annotations }}
   annotations: {{ toYaml . | nindent 4 }}
 {{- end }}
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  url: {{ .Values.gitRepository.spec.url }}
+  url: {{ .spec.chart.source.url }}
   {{- if .Values.secret.create }}
   secretRef:
     name: {{ .Release.Name }}
-  {{- else if .Values.gitRepository.spec.secretRef }}
-  secretRef: {{ toYaml .Values.gitRepository.spec.secretRef | nindent 4 }}
+  {{- else if .spec.chart.source.secretRef }}
+  secretRef: {{ toYaml .spec.chart.source.secretRef | nindent 4 }}
   {{- end }}
-  {{- if .Values.gitRepository.spec.interval }}
-  interval: {{ .Values.gitRepository.spec.interval }}
+  {{- if .spec.chart.source.interval }}
+  interval: {{ .spec.chart.source.interval }}
   {{- end }}
-  {{- if .Values.gitRepository.spec.timeout }}
-  timeout: {{ .Values.gitRepository.spec.timeout }}
+  {{- if .spec.chart.source.timeout }}
+  timeout: {{ .spec.chart.source.timeout }}
   {{- end }}
-  {{- with .Values.gitRepository.spec.ref }}
+  {{- with .spec.chart.source.ref }}
   ref: {{ toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.gitRepository.spec.verify }}
+  {{- with .spec.chart.source.verify }}
   verify: {{ toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.gitRepository.spec.ignore }}
+  {{- with .spec.chart.source.ignore }}
   ignore: {{- toYaml . | indent 2 }}
   {{- end }}
-  {{- if .Values.gitRepository.spec.suspend }}
-  suspend: {{ .Values.gitRepository.spec.suspend }}
+  {{- if .spec.chart.source.suspend }}
+  suspend: {{ .spec.chart.source.suspend }}
   {{- end }}
-  {{- if .Values.gitRepository.spec.gitImplementation }}
-  gitImplementation: {{ .Values.gitRepository.spec.gitImplementation }}
+  {{- if .spec.chart.source.gitImplementation }}
+  gitImplementation: {{ .spec.chart.source.gitImplementation }}
   {{- end }}
-  {{- if .Values.gitRepository.spec.recurseSubmodules }}
-  recurseSubmodules: {{ .Values.gitRepository.spec.recurseSubmodules }}
+  {{- if .spec.chart.source.recurseSubmodules }}
+  recurseSubmodules: {{ .spec.chart.source.recurseSubmodules }}
   {{- end }}
-  {{- with .Values.gitRepository.spec.include }}
+  {{- with .spec.chart.source.include }}
   include: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
   {{- end }}

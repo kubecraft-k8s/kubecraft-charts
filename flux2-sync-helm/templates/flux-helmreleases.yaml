@@ -1,8 +1,6 @@
+{{/*TODO: Allow setting existingRelease or helmreleaseRef to specified a shared dependency*/}}
 {{- range .Values.helmreleases }}
-{{- $name := default $.Release.Name}}
-{{- if and .metadata .metadata.name}}
-{{- $name := .name  }}
-{{- end}}
+{{- $name := .metadata.name  }}
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -29,15 +27,13 @@ spec:
     spec:
       interval: {{ .spec.interval | default "1m" }}
       chart: {{ .spec.chart.name | default "flux2-sync-helm" }}
-      {{- if .spec.chart.sourceRef }}
       sourceRef:
-        kind: {{ .spec.chart.sourceRef.kind | default "GitRepository" }}
-        name: {{ $.Release.Name }}
-      {{- else }}
-      sourceRef:
+        {{- if .spec.chart.source }}
+        kind: {{ .spec.chart.source.kind | default "GitRepository" }}
+        {{- else }}
         kind: "GitRepository"
-        name: {{ $.Release.Name }}
-      {{- end }}
+        {{- end }}
+        name: {{ $.Release.Name }}-$name
       {{- if .spec.chart.version }}
       version: {{ .spec.chart.version}}
       {{- end }}
