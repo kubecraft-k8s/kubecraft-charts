@@ -7,8 +7,8 @@ metadata:
 spec:
   schedule: {{ .Values.backup.schedule }}
   template:
-{{/*    includedNamespaces:*/}}
-{{/*      - "{{ .Release.Namespace }}"*/}}
+    includedNamespaces:
+      - "{{ .Release.Namespace }}"
 {{/*    includedResources:*/}}
 {{/*      - machine*/}}
 {{/*      - hcloudmachine*/}}

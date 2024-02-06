@@ -1,0 +1,24 @@
+{{- if .Values.helmrepository }}
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Namespace | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/part-of: flux
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+{{ with .Values.helmrepository.labels }}{{ toYaml . | indent 4 }}{{ end }}
+{{- with .Values.helmrepository.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
+{{- end }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  url: {{ .Values.helmrepository.spec.url }}
+  {{- if .Values.helmrepository.spec.interval }}
+  interval: {{ .Values.helmrepository.spec.interval }}
+  {{- end }}
+  {{- if .Values.helmrepository.spec.type }}
+  type: {{ .Values.helmrepository.spec.type }}
+  {{- end }}
+{{- end }}

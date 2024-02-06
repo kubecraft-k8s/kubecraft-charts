@@ -1,0 +1,35 @@
+{{- if .Values.helmrelease }}
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Namespace | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/part-of: flux
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+  {{ with .Values.helmrelease.labels }}{{ toYaml . | indent 4 }}{{ end }}
+  {{- with .Values.helmrelease.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  name:  {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  dependsOn: {{ toYaml .Values.helmrelease.spec.dependsOn | nindent 4 }}
+  install:
+    createNamespace: true
+  releaseName: {{ .Values.helmrelease.spec.releaseName | default .Release.Name }}
+  targetNamespace: {{ .Values.helmrelease.spec.targetNamespace | default .Release.Namespace }}
+  storageNamespace: {{ .Values.helmrelease.spec.storageNamespace | default "flux-system" }}
+  chart:
+    spec:
+      chart: {{ .Values.helmrelease.spec.chart.name }}
+      interval: {{ .Values.helmrelease.spec.interval }}
+      sourceRef:
+        kind: {{ .Values.helmrelease.spec.chart.sourceRef.kind }}
+        name: {{ .Release.Name }}
+      version: {{ .Values.helmrelease.spec.chart.version}}
+  interval: 1m
+  {{- with .Values.helmrelease.spec.chart.values }}
+  values: {{ toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
