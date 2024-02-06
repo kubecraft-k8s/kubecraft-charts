@@ -1,0 +1,37 @@
+clusterapi:
+  infrastructure:
+    hetzner:
+      # TODO: Allow passing as secretRef
+      token: "FILLME"
+      sshkey: "key"
+      region: "nbg1"
+  bootstrap:
+    kubeadm:
+      containerdversion: "1.7.13"
+  controlplane:
+    kubeadm:
+      # head -c 32 /dev/urandom | base64
+      # TODO: Allow passing as secretRef
+      encryptionpassphrase: "FILLME"
+      containerdversion: "1.7.13"
+      kubernetesversion: "1.29.1"
+      replicas: "1"
+      flavour: "cax11"
+  core:
+    replicas: "1"
+    kubernetesversion: "1.29.1"
+  addon:
+    ccmHetzner:
+      version: "v1.19.0"
+    cniCillium:
+      version: "1.15.0"
+backup:
+  enabled: true
+  name: kubecraft-mgmt
+  schedule: '0 10 * * *'
+restore:
+  enabled: true
+wait:
+  enabled: true
+templates:
+  enabled: true

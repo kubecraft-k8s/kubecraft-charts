@@ -1,0 +1,61 @@
+{{- if .Values.wait.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kubecraft.fullname" . }}-wait
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-10"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:  {{ include "kubecraft.fullname" . }}-wait
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-10"
+rules:
+  - apiGroups: [ "cluster.x-k8s.io" ]
+    resources:
+      - clusters
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kubecraft.fullname" . }}-wait
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-10"
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kubecraft.fullname" . }}-wait
+    namespace: {{$.Release.Namespace}}
+roleRef:
+  kind: Role
+  name: {{ include "kubecraft.fullname" . }}-wait
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "kubecraft.fullname" . }}-wait
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-10"
+spec:
+  template:
+    metadata:
+      name: {{ include "kubecraft.fullname" . }}-wait
+    spec:
+      serviceAccountName: {{ include "kubecraft.fullname" . }}-wait
+      containers:
+        - name: wait
+          image: "bitnami/kubectl"
+          args: [ "wait", "--for=condition=ready", "--timeout", "5m", "cluster/kubecraft-mgmt"]
+      restartPolicy: Never
+---
+{{- end }}

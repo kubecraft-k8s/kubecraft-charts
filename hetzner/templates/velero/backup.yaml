@@ -1,0 +1,66 @@
+{{- if .Values.backup.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kubecraft.fullname" . }}-backup
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:  {{ include "kubecraft.fullname" . }}-backup
+  namespace: velero
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+rules:
+  - apiGroups: [ "velero.io" ]
+    resources:
+      - backups
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+  - apiGroups: [ "velero.io" ]
+    resources:
+      - schedules
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kubecraft.fullname" . }}-backup
+  namespace: velero
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kubecraft.fullname" . }}-backup
+    namespace: {{$.Release.Namespace}}
+roleRef:
+  kind: Role
+  name: {{ include "kubecraft.fullname" . }}-backup
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "kubecraft.fullname" . }}-backup
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+spec:
+  template:
+    metadata:
+      name: {{ include "kubecraft.fullname" . }}-backup
+    spec:
+      serviceAccountName: {{ include "kubecraft.fullname" . }}-backup
+      containers:
+        - name: backup
+          image: "velero/velero"
+          command: [ "/velero" ]
+          args: [ "backup","create","--from-schedule={{.Values.backup.name}}","--wait" ]
+      restartPolicy: Never
+---
+{{- end }}

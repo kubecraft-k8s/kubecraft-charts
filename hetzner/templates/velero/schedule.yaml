@@ -1,0 +1,18 @@
+{{- if .Values.templates.enabled }}
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: {{ .Values.backup.name }}
+  namespace: velero
+spec:
+  schedule: {{ .Values.backup.schedule }}
+  template:
+{{/*    includedNamespaces:*/}}
+{{/*      - "{{ .Release.Namespace }}"*/}}
+{{/*    includedResources:*/}}
+{{/*      - machine*/}}
+{{/*      - hcloudmachine*/}}
+    labelSelector:
+      matchLabels:
+        x.velero.backup: {{ .Values.backup.name }}
+{{- end }}
