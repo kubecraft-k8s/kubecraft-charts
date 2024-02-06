@@ -14,7 +14,6 @@ spec:
     metadata:
       labels:
         {{- include "kubecraft.labels" . | nindent 8 }}
-        "x.velero.backup": "{{ .Values.backup.name}}"
         nodepool: {{ include "kubecraft.fullname" . }}-md
     spec:
       bootstrap:
