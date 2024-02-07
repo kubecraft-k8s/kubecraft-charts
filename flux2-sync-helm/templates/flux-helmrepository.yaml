@@ -1,5 +1,6 @@
 {{- range .Values.helmreleases }}
-{{- if .spec.chart.source.kind eq "HelmRepository"}}
+{{- if .spec }}
+{{- if .spec.type eq "HelmRepository"}}
 {{- $name := .metadata.name  }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -20,8 +21,9 @@ spec:
   {{- if .spec.chart.source.interval }}
   interval: {{ .spec.chart.source.interval }}
   {{- end }}
-  {{- if ..spec.chart.source.type }}
+  {{- if .spec.chart.source.type }}
   type: {{ .spec.chart.source.type }}
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

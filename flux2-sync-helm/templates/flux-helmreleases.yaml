@@ -28,8 +28,8 @@ spec:
       interval: {{ .spec.interval | default "1m" }}
       chart: {{ .spec.chart.name | default "flux2-sync-helm" }}
       sourceRef:
-        {{- if .spec.chart.source }}
-        kind: {{ .spec.chart.source.kind | default "GitRepository" }}
+        {{- if .spec.type }}
+        kind: {{ .spec.type | default "GitRepository" }}
         {{- else }}
         kind: "GitRepository"
         {{- end }}

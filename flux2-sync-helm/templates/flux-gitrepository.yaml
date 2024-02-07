@@ -1,5 +1,6 @@
 {{- range .Values.helmreleases }}
-{{- if .spec.chart.source.kind eq "GitRepository" or .spec.chart.source.kind eq ""}}
+{{- if .spec }}
+{{- if .spec.type eq "GitRepository" or .spec.type eq ""}}
 {{- $name := .metadata.name  }}
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
@@ -49,6 +50,7 @@ spec:
   {{- end }}
   {{- with .spec.chart.source.include }}
   include: {{ toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}
