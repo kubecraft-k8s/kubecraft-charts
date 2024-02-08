@@ -1,19 +1,20 @@
 {{- range .Values.helmreleases }}
-{{- if and .spec (eq .spec.type "HelmRepository")}}
+{{- if not .spec }}
 {{- $name := .metadata.name  }}
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
 metadata:
   labels:
     app.kubernetes.io/instance: {{ $.Release.Namespace | quote }}
     app.kubernetes.io/managed-by: {{ $.Release.Service | quote }}
     app.kubernetes.io/part-of: flux
     helm.sh/chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
-  name: {{ $name  }}
+  name: {{ $.Release.Name }}-{{ $name }}
   namespace: {{ $.Release.Namespace }}
 spec:
-  url: {{ .spec.source }}
-  interval: {{ .spec.chart.source.interval | default "1m" }}
-  type: {{ .spec.type }}
+  url: https://github.com/kubecraft-k8s/kubecraft-charts
+  interval: 5m
+  ref:
+    branch: main
 {{- end }}
 {{- end }}

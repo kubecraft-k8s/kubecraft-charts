@@ -19,32 +19,19 @@ spec:
   install:
     createNamespace: true
   releaseName: {{ $name }}
-  {{- if .spec }}
-  targetNamespace: {{ .spec.targetNamespace | default $name }}
-  dependsOn: {{ toYaml .spec.dependsOn | nindent 4 }}
-  storageNamespace: {{ .spec.storageNamespace | default "flux-system" }}
+  targetNamespace: {{ .targetNamespace | default $name }}
+  dependsOn: {{ toYaml .dependsOn | nindent 4 }}
+  storageNamespace: {{ .storageNamespace | default "flux-system" }}
   chart:
     spec:
-      interval: {{ .spec.interval | default "1m" }}
-      chart: {{ .spec.chart.name | default "flux2-sync-helm" }}
+      interval: {{ .interval | default "1m" }}
+      chart: {{ .chart | default "flux2-sync-helm" }}
       sourceRef:
-        {{- if .spec.type }}
-        kind: {{ .spec.type | default "GitRepository" }}
-        {{- else }}
-        kind: "GitRepository"
-        {{- end }}
-        name: {{ $.Release.Name }}-$name
-      {{- if .spec.chart.version }}
-      version: {{ .spec.chart.version}}
+        kind: {{ .type | default "GitRepository" }}
+        name: {{ $.Release.Name }}-{{ $name }}
+      {{- if .version }}
+      version: {{ .version}}
       {{- end }}
-  {{- else }}
-  chart:
-    spec:
-      chart: "flux2-sync-helm"
-      sourceRef:
-        kind: "GitRepository"
-        name: {{ $.Release.Name }}
-  {{- end }}
   interval: {{ .interval | default "1m" }}
   {{- with .values }}
   values: {{ toYaml . | nindent 4 }}
