@@ -1,5 +1,5 @@
 {{- range .Values.helmreleases }}
-{{- if not .spec }}
+{{- if or (not .spec) (not .spec.kind ) }}
 {{- $name := .spec.fullnameOverride | default (print $.Release.Name "-" .metadata.name ) }}
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
