@@ -1,50 +1,21 @@
 {{- range .Values.helmreleases }}
-{{- if and .spec (eq .spec.type "GitRepository")}}
-{{/*{{- $name := .metadata.name  }}*/}}
-{{/*apiVersion: source.toolkit.fluxcd.io/v1*/}}
-{{/*kind: GitRepository*/}}
-{{/*metadata:*/}}
-{{/*  labels:*/}}
-{{/*    app.kubernetes.io/instance: {{ $.Release.Namespace | quote }}*/}}
-{{/*    app.kubernetes.io/managed-by: {{ $.Release.Service | quote }}*/}}
-{{/*    app.kubernetes.io/part-of: flux*/}}
-{{/*    helm.sh/chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}*/}}
-{{/*{{- end }}*/}}
-{{/*  name: {{ $.Release.Name }}*/}}
-{{/*  namespace: {{ $.Release.Namespace }}*/}}
-{{/*spec:*/}}
-{{/*  url: https://github.com/kubecraft-k8s/kubecraft-charts*/}}
-{{/*  {{- if $.Values.secret.create }}*/}}
-{{/*  secretRef:*/}}
-{{/*    name: {{ .Release.Name }}*/}}
-{{/*  {{- else if .spec.chart.source.secretRef }}*/}}
-{{/*  secretRef: {{ toYaml .spec.chart.source.secretRef | nindent 4 }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .spec.chart.source.interval }}*/}}
-{{/*  interval: {{ .spec.chart.source.interval }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .spec.chart.source.timeout }}*/}}
-{{/*  timeout: {{ .spec.chart.source.timeout }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- with .spec.chart.source.ref }}*/}}
-{{/*  ref: {{ toYaml . | nindent 4 }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- with .spec.chart.source.verify }}*/}}
-{{/*  verify: {{ toYaml . | nindent 4 }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- with .spec.chart.source.ignore }}*/}}
-{{/*  ignore: {{- toYaml . | indent 2 }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .spec.chart.source.suspend }}*/}}
-{{/*  suspend: {{ .spec.chart.source.suspend }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .spec.chart.source.gitImplementation }}*/}}
-{{/*  gitImplementation: {{ .spec.chart.source.gitImplementation }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- if .spec.chart.source.recurseSubmodules }}*/}}
-{{/*  recurseSubmodules: {{ .spec.chart.source.recurseSubmodules }}*/}}
-{{/*  {{- end }}*/}}
-{{/*  {{- with .spec.chart.source.include }}*/}}
-{{/*  include: {{ toYaml . | nindent 4 }}*/}}
-  {{- end }}
-  {{- end }}
+{{- if and .spec (eq .spec.kind "GitRepository")}}
+{{- $name := .spec.fullnameOverride | default (print $.Release.Name "-" .metadata.name ) }}
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ $.Release.Namespace | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service | quote }}
+    app.kubernetes.io/part-of: flux
+    helm.sh/chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  url: {{ .spec.source }}
+  interval: {{ .spec.interval | default "1m" }}
+  ref:
+    branch: main
+{{- end }}
+---
+{{- end }}

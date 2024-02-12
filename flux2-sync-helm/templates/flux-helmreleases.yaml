@@ -1,6 +1,6 @@
 {{/*TODO: Allow setting existingRelease or helmreleaseRef to specified a shared dependency*/}}
 {{- range .Values.helmreleases }}
-{{- $name := .metadata.name  }}
+{{- $name := .spec.fullnameOverride | default (print $.Release.Name "-" .metadata.name ) }}
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -16,24 +16,32 @@ metadata:
   name:  {{ $name }}
   namespace: {{ $.Release.Namespace }}
 spec:
+  {{- with .spec.kubeconfig }}
+  kubeConfig:
+    secretRef:
+      name: {{ . }}
+  {{- end }}
   install:
     createNamespace: true
-  releaseName: {{ $name }}
+  releaseName: {{ .releasename | default $name }}
   targetNamespace: {{ .targetNamespace | default $name }}
-  dependsOn: {{ toYaml .dependsOn | nindent 4 }}
   storageNamespace: {{ .storageNamespace | default "flux-system" }}
+  {{- with .spec.dependsOn }}
+  dependsOn: {{ toYaml . | nindent 4 }}
+  {{- end }}
   chart:
     spec:
-      interval: {{ .interval | default "1m" }}
-      chart: {{ .chart | default "flux2-sync-helm" }}
+      interval: {{ .spec.interval | default "1m" }}
+      chart: {{ .spec.chart | default "flux2-sync-helm" }}
       sourceRef:
-        kind: {{ .type | default "GitRepository" }}
-        name: {{ $.Release.Name }}-{{ $name }}
-      {{- if .version }}
-      version: {{ .version}}
+        kind: {{ .spec.kind | default "GitRepository" }}
+        name: {{ $name }}
+      {{- if .spec.version }}
+      version: {{ .spec.version}}
       {{- end }}
   interval: {{ .interval | default "1m" }}
   {{- with .values }}
   values: {{ toYaml . | nindent 4 }}
   {{- end }}
+---
 {{- end }}

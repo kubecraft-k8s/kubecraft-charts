@@ -1,6 +1,6 @@
 {{- range .Values.helmreleases }}
 {{- if not .spec }}
-{{- $name := .metadata.name  }}
+{{- $name := .spec.fullnameOverride | default (print $.Release.Name "-" .metadata.name ) }}
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ $.Release.Service | quote }}
     app.kubernetes.io/part-of: flux
     helm.sh/chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
-  name: {{ $.Release.Name }}-{{ $name }}
+  name: {{ $name }}
   namespace: {{ $.Release.Namespace }}
 spec:
   url: https://github.com/kubecraft-k8s/kubecraft-charts
@@ -17,4 +17,5 @@ spec:
   ref:
     branch: main
 {{- end }}
+---
 {{- end }}
