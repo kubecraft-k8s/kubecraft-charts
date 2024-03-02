@@ -11,5 +11,9 @@ spec:
 {{- with .version}}
   version: {{ . }}
 {{- end }}
+{{- with .configSecret}}
+  configSecret:
+    name: {{ . }}
+{{- end }}
 ---
 {{- end }}
